@@ -2,10 +2,10 @@ using Npgsql;
 
 namespace Application.Data;
 
-public static class Database
+public class Database
 {
-    private static string connection = "Host=localhost;Port=5432;Database=MiniShop;Username=postgres;Password=1234";
-    public static NpgsqlConnection Connection()
+    private string connection = "Host=localhost;Port=5432;Database=MiniShop;Username=postgres;Password=1234";
+    public NpgsqlConnection Connection()
     {
         return new NpgsqlConnection(connection);
     }

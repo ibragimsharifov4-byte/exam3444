@@ -1,86 +1,51 @@
+
 using Application.Data;
+using Dapper;
 using Domain.Models;
-using Npgsql;
 
 namespace Application.Repositories;
 
-public class CategoryRepository
+public class CategoryRepository(Database database)
 {
-    public List<Category> GetAllCategories()
+    private Database _data = database;
+
+    public async Task<List<Category>> GetAllCategories()
     {
-        using var conn = Database.Connection();
-        conn.Open();
+        using var con = _data.Connection();
         var query = "select id, name from categories";
-        var cmd = new NpgsqlCommand(query, conn);
-        List<Category> categories = new List<Category>();
-        var reader = cmd.ExecuteReader();
-        while (reader.Read())
-        {
-            var category = new Category()
-            {
-                Id = reader.GetInt32(0),
-                Name = reader.GetString(1)
-            };
-            categories.Add(category);
-        }
-        return categories;
+        var categories = await con.QueryAsync<Category>(query);
+        return categories.ToList();
     }
 
-    public Category GetCategory(int id)
+    public async Task<Category?> GetCategory(int id)
     {
-        using var conn = Database.Connection();
-        conn.Open();
+        using var con = _data.Connection();
         var query = "select id, name from categories where id = @id";
-        var cmd = new NpgsqlCommand(query, conn);
-        cmd.Parameters.AddWithValue("@id", id);
-        var reader = cmd.ExecuteReader();
-
-        if (reader.Read())
-        {
-            var category = new Category()
-            {
-                Id = reader.GetInt32(0),
-                Name = reader.GetString(1)
-            };
-            return category;
-        }
-        else
-        {
-            return null;
-        }
+        var category = await con.QueryFirstOrDefaultAsync<Category>(query , new { id });
+        return category;
     }
 
-    public int AddCategory(Category c)
+    public async Task<int> AddCategory(Category c)
     {
-        using var conn = Database.Connection();
-        conn.Open();
-        var query = "insert into categories(name) values (@name) returning id";
-        var cmd = new NpgsqlCommand(query, conn);
-        cmd.Parameters.AddWithValue("@name", c.Name);
-        int id = (int)cmd.ExecuteScalar()!;
+        using var con = _data.Connection();
+        var query = "insert into categories(name) values (@name)";
+        int id = await con.ExecuteScalarAsync<int>(query, new{name = c.Name});
         return id;
     }
 
-    public bool UpdateCategory(Category c)
+    public async Task<bool> UpdateCategory(Category c)
     {
-        using var conn = Database.Connection();
-        conn.Open();
+        using var con = _data.Connection();
         var query = "update categories set name = @name where id = @id";
-        using var cmd = new NpgsqlCommand(query, conn);
-        cmd.Parameters.AddWithValue("@id", c.Id);
-        cmd.Parameters.AddWithValue("@name", c.Name);
-        int rows = cmd.ExecuteNonQuery();
+        int rows = await con.ExecuteAsync(query, new {id = c.Id , name = c.Name});
         return rows > 0;
     }
 
-    public bool DeleteCategory(int id)
+    public async Task<bool> DeleteCategory(int id)
     {
-        using var conn = Database.Connection();
-        conn.Open();
+        using var con = _data.Connection();
         var query = "delete from categories where id = @id";
-        using var cmd = new NpgsqlCommand(query, conn);
-        cmd.Parameters.AddWithValue("@id", id);
-        int rows = cmd.ExecuteNonQuery();
+        int rows = await con.ExecuteAsync(query, new { id });
         return rows > 0;
     }
 }
