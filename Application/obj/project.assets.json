@@ -69,6 +69,9 @@
       "Domain/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Npgsql": "10.0.3"
+        },
         "compile": {
           "bin/placeholder/Domain.dll": {}
         },
@@ -241,11 +244,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\mardin it\\OneDrive\\Desktop\\.net projects\\week1\\day6\\Application\\Application.csproj",
+      "projectUniqueName": "C:\\Users\\mardin it\\OneDrive\\Desktop\\.net projects\\week1\\day6\\Application\\Application.csproj",
       "projectName": "Application",
-      "projectPath": "c:\\Users\\mardin it\\OneDrive\\Desktop\\.net projects\\week1\\day6\\Application\\Application.csproj",
+      "projectPath": "C:\\Users\\mardin it\\OneDrive\\Desktop\\.net projects\\week1\\day6\\Application\\Application.csproj",
       "packagesPath": "C:\\Users\\mardin it\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\mardin it\\OneDrive\\Desktop\\.net projects\\week1\\day6\\Application\\obj\\",
+      "outputPath": "C:\\Users\\mardin it\\OneDrive\\Desktop\\.net projects\\week1\\day6\\Application\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\mardin it\\AppData\\Roaming\\NuGet\\NuGet.Config"

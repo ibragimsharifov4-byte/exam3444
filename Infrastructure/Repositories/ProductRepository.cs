@@ -2,21 +2,18 @@
 using Application.Data;
 using Dapper;
 using Domain.Models;
-
+using Domain.interfaces;
 namespace Application.Repositories;
 
-public class ProductRepository(Database database)
+public class ProductRepository(Database database) : IProductRepository
 {
     private Database _data = database;
 
     public async Task<List<Product>> GetAllProducts()
     {
         using var con = _data.Connection();
-
         var query = "select id, name, price, quantity, category_id from products";
-
         var products = await con.QueryAsync<Product>(query);
-
         return products.ToList();
     }
 
@@ -28,14 +25,14 @@ public class ProductRepository(Database database)
         return product;
     }
 
-    public async Task<int> AddProduct(Product p)
+    public async Task<bool> AddProduct(Product p)
     {
         using var con = _data.Connection();
         var query = @"
         insert into products(name, price, quantity, category_id)
         values (@Name, @Price, @Quantity, @CategoryId)";
         int id = await con.ExecuteScalarAsync<int>(query, p);
-        return id;
+        return id > 0;
     }
 
     public async Task<bool> UpdateProduct(Product p)

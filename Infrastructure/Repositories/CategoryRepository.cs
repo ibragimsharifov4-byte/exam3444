@@ -1,11 +1,12 @@
 
 using Application.Data;
 using Dapper;
+using Domain.interfaces;
 using Domain.Models;
 
-namespace Application.Repositories;
+namespace Infrastructure.Repositories;
 
-public class CategoryRepository(Database database)
+public class CategoryRepository(Database database) : ICategoryRepository
 {
     private Database _data = database;
 
@@ -25,12 +26,12 @@ public class CategoryRepository(Database database)
         return category;
     }
 
-    public async Task<int> AddCategory(Category c)
+    public async Task<bool> AddCategory(Category c)
     {
         using var con = _data.Connection();
         var query = "insert into categories(name) values (@name)";
-        int id = await con.ExecuteScalarAsync<int>(query, new{name = c.Name});
-        return id;
+        int id = await con.ExecuteAsync(query, new{name = c.Name});
+        return id > 0;
     }
 
     public async Task<bool> UpdateCategory(Category c)
