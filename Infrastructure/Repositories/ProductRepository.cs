@@ -3,7 +3,7 @@ using Application.Data;
 using Dapper;
 using Domain.Models;
 using Domain.interfaces;
-namespace Application.Repositories;
+namespace Infrastructure.Repositories;
 
 public class ProductRepository(Database database) : IProductRepository
 {
@@ -30,7 +30,7 @@ public class ProductRepository(Database database) : IProductRepository
         using var con = _data.Connection();
         var query = @"
         insert into products(name, price, quantity, category_id)
-        values (@Name, @Price, @Quantity, @CategoryId)";
+        values (@Name, @Price, @Quantity, @CategoryId) returning id";
         int id = await con.ExecuteScalarAsync<int>(query, p);
         return id > 0;
     }
@@ -42,6 +42,7 @@ public class ProductRepository(Database database) : IProductRepository
         update products
         set name = @Name,
         price = @Price,
+        quantity = @Quantity,
         category_id = @CategoryId
         where id = @Id";
         int rows = await con.ExecuteAsync(query, p);

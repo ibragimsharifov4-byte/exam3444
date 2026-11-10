@@ -1,6 +1,5 @@
 using Application.Data;
 using Application.Interfaces;
-using Application.Repositories;
 using Application.Services;
 using Domain.interfaces;
 using Infrastructure.Repositories;
@@ -12,14 +11,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<Database>();
-builder.Services.AddScoped<ICategoryRepository , CategoryRepository>();
-builder.Services.AddScoped<ICategoryService , CategoryService>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
-builder.Services.AddScoped<IProductRepository , ProductRepository>();
-builder.Services.AddScoped<IProductService , ProductService>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();
-
 
 if (app.Environment.IsDevelopment())
 {
