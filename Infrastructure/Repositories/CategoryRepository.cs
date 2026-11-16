@@ -1,52 +1,57 @@
 
-using Application.Data;
+using Domain.Data;
 using Dapper;
 using Domain.interfaces;
 using Domain.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class CategoryRepository(Database database) : ICategoryRepository
+public class CategoryRepository(AppDbContext database) : ICategoryRepository
 {
-    private Database _data = database;
+    private AppDbContext _context = database;
 
     public async Task<List<Category>> GetAllCategories()
     {
-        using var con = _data.Connection();
-        var query = "select id, name from categories";
-        var categories = await con.QueryAsync<Category>(query);
-        return categories.ToList();
+        return await _context.Categories.ToListAsync();
     }
 
     public async Task<Category?> GetCategory(int id)
     {
-        using var con = _data.Connection();
-        var query = "select id, name from categories where id = @id";
-        var category = await con.QueryFirstOrDefaultAsync<Category>(query , new { id });
-        return category;
+        var category = await _context.Categories.FirstOrDefaultAsync(x => x.Id == id);
+        if(category != null)
+        {
+            return category!;
+        }
+        return null;
     }
 
     public async Task<bool> AddCategory(Category c)
     {
-        using var con = _data.Connection();
-        var query = "insert into categories(name) values (@name)";
-        int id = await con.ExecuteAsync(query, new{name = c.Name});
-        return id > 0;
+        var res = _context.Categories.Add(c);
+        var result = _context.SaveChanges();
+        return result > 0;
     }
 
     public async Task<bool> UpdateCategory(Category c)
     {
-        using var con = _data.Connection();
-        var query = "update categories set name = @name where id = @id";
-        int rows = await con.ExecuteAsync(query, new {id = c.Id , name = c.Name});
-        return rows > 0;
+        var res = await _context.Categories.FirstOrDefaultAsync(x => x.Id == c.Id);
+        if(res != null)
+        {
+            res.Name = c.Name;
+        }
+        var ress = await _context.SaveChangesAsync();
+        return ress > 0;
     }
 
     public async Task<bool> DeleteCategory(int id)
     {
-        using var con = _data.Connection();
-        var query = "delete from categories where id = @id";
-        int rows = await con.ExecuteAsync(query, new { id });
-        return rows > 0;
+        var res = await _context.Categories.FirstOrDefaultAsync(x => x.Id == id);
+        if(res != null)
+        {
+            _context.Remove(res);
+        }
+        var ress = await _context.SaveChangesAsync();
+        return ress > 0;
     }
 }

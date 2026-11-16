@@ -1,83 +1,59 @@
 
-using Application.Data;
+using Domain.Data;
 using Dapper;
 using Domain.Models;
 using Domain.interfaces;
+using Microsoft.EntityFrameworkCore;
 namespace Infrastructure.Repositories;
 
-public class ProductRepository(Database database) : IProductRepository
+public class ProductRepository(AppDbContext database) : IProductRepository
 {
-    private Database _data = database;
+    private AppDbContext _context = database;
 
     public async Task<List<Product>> GetAllProducts()
     {
-        using var con = _data.Connection();
-        var query = "select id, name, price, quantity, category_id from products";
-        var products = await con.QueryAsync<Product>(query);
-        return products.ToList();
+        return await _context.Products.ToListAsync();
     }
 
     public async Task<Product?> GetProduct(int id)
     {
-        using var con = _data.Connection();
-        var query = "select id, name, price, quantity, category_id from products where id = @id";
-        var product = await con.QueryFirstOrDefaultAsync<Product>(query , new { id });
-        return product;
+        var res = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
+        if(res != null)
+        {
+            return res;
+        }
+        return null;
     }
 
     public async Task<bool> AddProduct(Product p)
     {
-        using var con = _data.Connection();
-        var query = @"
-        insert into products(name, price, quantity, category_id)
-        values (@Name, @Price, @Quantity, @CategoryId) returning id";
-        int id = await con.ExecuteScalarAsync<int>(query, p);
-        return id > 0;
+        var res = _context.Products.Add(p);
+        var ress = await _context.SaveChangesAsync();
+        return ress > 0;
     }
 
     public async Task<bool> UpdateProduct(Product p)
     {
-        using var con = _data.Connection();
-        var query = @"
-        update products
-        set name = @Name,
-        price = @Price,
-        quantity = @Quantity,
-        category_id = @CategoryId
-        where id = @Id";
-        int rows = await con.ExecuteAsync(query, p);
-        return rows > 0;
+        var res = await _context.Products.FirstOrDefaultAsync(x => x.Id == p.Id);
+        if(res != null)
+        {
+            res.Name = p.Name;
+            res.Quantity = p.Quantity;
+            res.Price = p.Price;
+            res.CategoryId = p.CategoryId;
+        }
+        var ress = await _context.SaveChangesAsync();
+        return ress > 0;
     }
 
     public async Task<bool> DeleteProduct(int id)
     {
-        using var con = _data.Connection();
-        var query = "delete from products where id = @id";
-        int rows = await con.ExecuteAsync(query, new { id });
-        return rows > 0;
-    }
-
-    public async Task SearchProductByName(string name)
-    {
-        using var con = _data.Connection();
-        var query = @"
-        select id, name, price, quantity, category_id
-        from products
-        where name = @name";
-        var products = await con.QueryAsync<Product>(query, new { name });
-        foreach (var product in products)
+        var res = await _context.Products.FirstOrDefaultAsync(x => x.Id == id);
+        if(res != null)
         {
-            Console.WriteLine(
-                $"Id: {product.Id}, Name: {product.Name}, Price: {product.Price}, Quantity: {product.Quantity}, CategoryId: {product.CategoryId}"
-            );
+            _context.Remove(res);
         }
-    }
-
-    public async Task<decimal> Filter(decimal maxPrice)
-    {
-        using var con = _data.Connection();
-        var query = "select max(price) from products where price <= @maxPrice";
-        var price = await con.ExecuteScalarAsync<decimal?>(query, new { maxPrice });
-        return price ?? 0;
+        var ress =  await _context.SaveChangesAsync();
+        return ress > 0;
     }
 }
