@@ -12,7 +12,8 @@ public class ProductRepository(AppDbContext database) : IProductRepository
 
     public async Task<List<Product>> GetAllProducts()
     {
-        return await _context.Products.ToListAsync();
+        var categories = await _context.Products.Include(e => e.category).ToListAsync();
+        return categories;
     }
 
     public async Task<Product?> GetProduct(int id)
